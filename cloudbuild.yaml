@@ -12,11 +12,11 @@ steps:
 
 - name: snyk/snyk-cli:npm
   args:
-    - '-c'
-    - |-
-      snyk config set api=${_SNYK_TOKEN}
-      snyk  test --severity-threshold=medium  --all-projects -d    
-  id: Snyk Open Source Test 
+  - '-c'
+  - |-
+    snyk config set api=${_SNYK_TOKEN}
+    snyk  test --severity-threshold=medium  --all-projects
+  id: Snyk Open Source Test
   entrypoint: bash
 
 # - name: snyk/snyk-cli:npm
