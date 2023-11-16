@@ -1,12 +1,12 @@
 steps:
-# This step builds the container image.
-- name: 'gcr.io/cloud-builders/docker'
-  id: Build
-  args:
-  - 'build'
-  - '-t'
-  - 'us-central1-docker.pkg.dev/possible-haven-397802/kube/test:v3'
-  - '.'
+# # This step builds the container image.
+# - name: 'gcr.io/cloud-builders/docker'
+#   id: Build
+#   args:
+#   - 'build'
+#   - '-t'
+#   - 'us-central1-docker.pkg.dev/possible-haven-397802/kube/test:v3'
+#   - '.'
 
 
 
