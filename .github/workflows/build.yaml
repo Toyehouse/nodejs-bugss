@@ -1,0 +1,39 @@
+name: Deploy GKE
+
+on:
+  push:
+    branches:
+      - 'dev'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    name: Run the SCA scan on the source code
+    steps:
+      - uses: actions/checkout@master
+
+      - name: RunSnyk to Opensource Test for vulnerabilities
+        uses: snyk/actions/node@master
+        with:
+          command: test 
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: RunSnyk Code Test
+        uses: snyk/actions/node@master
+        with:
+          command: code test 
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - uses: actions/checkout@master
+      - name: Run Snyk Monitor
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor   
+      
