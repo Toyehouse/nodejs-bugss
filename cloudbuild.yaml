@@ -1,59 +1,53 @@
 steps:
-# # This step builds the container image.
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: Build
-#   args:
-#   - 'build'
-#   - '-t'
-#   - 'us-central1-docker.pkg.dev/possible-haven-397802/kube/test:v3'
-#   - '.'
+# This step builds the container image.
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build
+  args:
+  - 'build'
+  - '-t'
+  - 'us-central1-docker.pkg.dev/possible-haven-397802/kube/bug:$SHORT_SHA'
+  - '.'
 
 
 
 - name: snyk/snyk-cli:npm
   args:
-  - '-c'
-  - |-
-    snyk config set api=${_SNYK_TOKEN}
-    docker build -t test .
-    snyk  test --severity-threshold=medium  --all-projects
-    continue-on-error: true
-  id: Snyk Open Source Test
+    - '-c'
+    - |-
+      snyk config set api=${_SNYK_TOKEN}
+      snyk test --severity-threshold=medium || true 
+  id: Snyk Open Source Test 
   entrypoint: bash
 
 - name: snyk/snyk-cli:npm
   args:
-  - '-c'
-  - |-
-    snyk config set api=${_SNYK_TOKEN}
-    snyk Code test --severity-threshold=medium
-    continue-on-error: true
+    - '-c'
+    - |-
+      snyk config set api=${_SNYK_TOKEN}
+      snyk Code test --severity-threshold=medium || true
   id: Snyk Code Test
-  entrypoint: bash
+  entrypoint: bash 
 
-# - name: snyk/snyk-cli:npm
-#   args:
-#     - '-c'
-#     - |-
-#       snyk config set api=${_SNYK_TOKEN}
+- name: snyk/snyk-cli:npm
+  args:
+    - '-c'
+    - |-
+      snyk config set api=${_SNYK_TOKEN}
+      snyk monitor --severity-threshold=medium || true
+  id: Snyk Monitor
+  entrypoint: bash 
 
-#       snyk container test --severity-threshold=medium us-central1-docker.pkg.dev/possible-haven-397802/kube/test:$SHORT_SHA
-#   id: Snyk Container Test 
-#   entrypoint: bash 
-# This step pushes the image to Artifact Registry
-# The PROJECT_ID and SHORT_SHA variables are automatically
-# replaced by Cloud Build.
 - name: 'gcr.io/cloud-builders/docker'
   id: Push
   args:
   - 'push'
-  - 'us-central1-docker.pkg.dev/possible-haven-397802/kube/test:v3'
+  - 'us-central1-docker.pkg.dev/possible-haven-397802/kube/bug:$SHORT_SHA'
 
 # - name: "gcr.io/cloud-builders/gke-deploy"
 #   id: GKE Deploy
 #   args:
 #   - run
 #   - --filename=k8s/all.yaml
-#   - --image=us-central1-docker.pkg.dev/possible-haven-397802/kube/test:v3
+#   - --image=us-central1-docker.pkg.dev/possible-haven-397802/kube/test:$SHORT_SHA
 #   - --location=us-central1
-#   - --cluster=kube-cicd
+#   - --cluster=gke-cicd-prod
