@@ -1,15 +1,15 @@
-name: Deploy GKE
+name: Deploy  BUG to GKE
 
 on:
   push:
     branches:
-      - 'main'
+      - 'dev'
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
-    name: Run the SCA scan on the source code
+    name: Run all Scan Types
     steps:
       - uses: actions/checkout@master
 
@@ -21,7 +21,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: RunSnyk Code Test
+      - name: RunSnyk SAST Test
         uses: snyk/actions/node@master
         with:
           command: code test 
@@ -37,3 +37,27 @@ jobs:
         with:
           command: monitor   
       
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+
+    steps:
+    - name: code checkout
+      uses: actions/checkout@v2
+      
+    - name: install the gcloud cli
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{ secrets.GOOGLE_PROJECT }}
+        service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        install_components: 'gke-gcloud-auth-plugin'
+        export_default_credentials: true
+
+    - name: build and push the docker image
+      env:
+        GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev
+        docker build -t us-central1-docker.pkg.dev/possible-haven-397802/bugs/bugzy-dev:v1 .
+        docker push us-central1-docker.pkg.dev/possible-haven-397802/bugs/bugzy-dev:v1
